@@ -1,0 +1,69 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "crewai-todo-manager"
+version = "1.0.0"
+description = "Todo Management Agent using CrewAI Framework"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [
+    {name = "Your Name", email = "your.email@example.com"}
+]
+keywords = ["crewai", "agent", "todo", "automation", "ollama"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+# Core dependencies - exact versions for reproducibility
+dependencies = [
+    "crewai==0.35.0",
+    "langchain==0.2.0",
+    "langchain-community==0.2.0",
+    "ollama==0.1.25",
+    "crewai-tools==0.7.0",
+    "pydantic==2.6.0",
+    "pyyaml==6.0",
+    "python-dotenv==1.0.0",
+    "requests==2.31.0",
+]
+
+# Optional development dependencies
+[project.optional-dependencies]
+dev = [
+    "pytest==7.4.3",
+    "pytest-cov==4.1.0",
+    "black==23.12.0",
+    "flake8==6.1.0",
+    "mypy==1.7.1",
+    "ipython==8.18.0",
+]
+
+# uv configuration
+[tool.uv]
+# Dependencies to resolve together
+# This ensures compatible versions across all packages
+managed = true
+
+# Package discovery
+[tool.uv.sources]
+# If needed, specify private package repositories here
+# Example: {url = "https://pypi.example.com/simple", priority = "primary"}
+
+# Entry points for CLI commands (optional)
+[project.scripts]
+crewai-todo = "main:main"
+
+# URLs for documentation and repository
+[project.urls]
+"Homepage" = "https://github.com/yourusername/crewai-todo-manager"
+"Documentation" = "https://github.com/yourusername/crewai-todo-manager/blob/main/README.md"
+"Repository" = "https://github.com/yourusername/crewai-todo-manager"
+"Bug Tracker" = "https://github.com/yourusername/crewai-todo-manager/issues"

@@ -1,0 +1,77 @@
+{
+  "description": "Master configuration for Todo Management Agent System",
+  "ollama_config": {
+    "base_url": "http://localhost:11434",
+    "models": [
+      {
+        "name": "mistral",
+        "description": "Balanced, good for reasoning",
+        "recommended": true
+      },
+      {
+        "name": "llama2",
+        "description": "Larger, more capable",
+        "recommended": false
+      },
+      {
+        "name": "neural-chat",
+        "description": "Lightweight, conversational",
+        "recommended": false
+      }
+    ]
+  },
+  "todo_schema": {
+    "id": "unique identifier (integer)",
+    "task": "task description (string)",
+    "priority": "high/normal/low (string)",
+    "created_at": "ISO timestamp (string)",
+    "completed_at": "ISO timestamp or null (string|null)",
+    "is_completed": "completion status (boolean)",
+    "description": "detailed description (string)"
+  },
+  "frameworks": {
+    "CrewAI": {
+      "folder": "CrewAiADK",
+      "llm_integration": "ChatOllama from langchain_community",
+      "best_for": "Complex multi-agent workflows with tasks"
+    },
+    "OpenAI": {
+      "folder": "OpenAiADK",
+      "llm_integration": "OpenAI client or Ollama proxy",
+      "best_for": "Simple, direct agent orchestration"
+    },
+    "GoogleADK": {
+      "folder": "GoogleADK",
+      "llm_integration": "google.genai with optional Ollama",
+      "best_for": "MCP integration and advanced features"
+    }
+  },
+  "tools": {
+    "add_todo": {
+      "description": "Add new todo item",
+      "parameters": {
+        "task": "string (required)",
+        "priority": "string - high/normal/low (optional, default: normal)"
+      }
+    },
+    "complete_todo": {
+      "description": "Mark todo as complete by ID or description",
+      "parameters": {
+        "todo_id": "integer (optional)",
+        "description": "string (optional) - search by task description"
+      }
+    },
+    "get_todos": {
+      "description": "Retrieve todos, optionally including completed",
+      "parameters": {
+        "include_completed": "boolean (optional, default: false)"
+      }
+    },
+    "delete_todo": {
+      "description": "Delete todo by ID",
+      "parameters": {
+        "todo_id": "integer (required)"
+      }
+    }
+  }
+}

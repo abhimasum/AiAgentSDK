@@ -1,0 +1,49 @@
+[project]
+name = "google-adk-todo-manager"
+version = "1.0.0"
+description = "Todo Management Agent using Google Advanced Development Kit (ADK)"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [
+    {name = "Your Name", email = "your.email@example.com"}
+]
+keywords = ["google-adk", "agent", "todo", "gemini", "automation"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+# Core dependencies
+dependencies = [
+    "google-adk>=2.7.1",
+    "litellm>=1.0.0",
+    "pydantic>=2.7.2",
+    "anthropic>=0.39.0",
+    "python-dotenv>=1.0.0",
+]
+
+# Optional development dependencies
+[project.optional-dependencies]
+dev = [
+    "pytest==7.4.3",
+    "pytest-cov==4.1.0",
+    "black==23.12.0",
+    "flake8==6.1.0",
+    "mypy==1.7.1",
+    "ipython==8.18.0",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/yourusername/google-adk-todo"
+"Documentation" = "https://github.com/yourusername/google-adk-todo/blob/main/README.md"
+"Repository" = "https://github.com/yourusername/google-adk-todo"
+"Bug Tracker" = "https://github.com/yourusername/google-adk-todo/issues"
+
+# uv configuration
+[tool.uv]
+managed = true
