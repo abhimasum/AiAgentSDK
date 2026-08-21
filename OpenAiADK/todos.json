@@ -1,0 +1,26 @@
+{
+  "todos": [
+    {
+      "id": 1,
+      "task": "learn AI agents",
+      "priority": "high",
+      "description": "",
+      "created_at": "2026-08-20T16:55:08.539352",
+      "completed_at": null,
+      "is_completed": false
+    },
+    {
+      "id": 2,
+      "task": "Learn Angular for UI",
+      "priority": "high",
+      "description": "",
+      "created_at": "2026-08-20T16:57:26.216670",
+      "completed_at": "2026-08-20T16:57:52.979110",
+      "is_completed": true
+    }
+  ],
+  "metadata": {
+    "created": "2026-08-20T16:43:15.525207",
+    "last_modified": "2026-08-20T16:57:52.979110"
+  }
+}
