@@ -121,6 +121,48 @@ CrewAiADK/
 
 ---
 
+## Natural Language Command Handling ✨
+
+The agent now handles natural language variations and synonyms:
+
+### Task Completion (Multiple Synonyms Work!)
+```
+✅ "complete task 1"        → Complete task #1
+✅ "finish task 1"          → Complete task #1 (synonym)
+✅ "mark task 1 as done"    → Complete task #1 (natural phrasing)
+✅ "complete task 1,2,3"    → Bulk complete (all at once)
+✅ "finish tasks 2, 3"      → Bulk complete with spaces
+```
+
+### Adding Tasks
+```
+✅ "add task learn python"           → Medium priority by default
+✅ "add task exercise high priority" → Extracts high priority
+✅ "create new task coding"          → Synonym for "add"
+```
+
+### Listing Tasks
+```
+✅ "list my tasks"    → Show incomplete tasks
+✅ "show all tasks"   → Display todo list
+✅ "list tasks"       → Simple list command
+```
+
+### Deleting Tasks
+```
+✅ "delete task 1"       → Remove task #1
+✅ "remove task 2,3"     → Multiple delete (synonyms work)
+```
+
+### Statistics
+```
+✅ "stats"               → Show summary
+✅ "show statistics"     → Full breakdown
+✅ "summary"             → Quick stats
+```
+
+---
+
 ## Command Reference
 
 ### Add Tasks
@@ -165,12 +207,13 @@ show stats
 
 ## Testing
 
+### Automated Test Suite
 Run the automated test suite:
 ```bash
 uv run python automated_test.py
 ```
 
-**Test Coverage:**
+**Core Functionality Tests (10 tests):**
 - ✅ Add task (default priority)
 - ✅ Add task (high priority)
 - ✅ Add task (low priority)
@@ -194,6 +237,23 @@ RESULTS: 10 passed, 0 failed
   [OK] Delete tasks
   [OK] Statistics breakdown
 ```
+
+### Natural Language Test Suite ✨
+Test natural language variations:
+```bash
+uv run python test_natural_language.py
+```
+
+**15 Natural Language Tests - All Passing ✅**
+Tests cover:
+- Task completion with multiple synonyms ("complete", "finish", "mark as done")
+- Bulk operations ("complete task 1,2,3")
+- Task creation with priorities ("add task exercise high priority")
+- List commands ("show all tasks", "list my tasks")
+- Delete operations ("delete task", "remove task")
+- Statistics ("stats", "show statistics")
+
+**Result:** All 15 natural language variations tested and passing ✅
 
 ---
 
@@ -241,6 +301,18 @@ tools=[add_todo, get_todos, complete_todo, delete_todo, get_stats]
 ---
 
 ## Troubleshooting
+
+### Issue: OpenTelemetry export errors
+**Symptom:** `ERROR:opentelemetry.exporter.otlp.proto.http.trace_exporter:Failed to export span batch`  
+**Solution:** Already fixed! The chat.py disables telemetry with:
+```python
+os.environ['OTEL_SDK_DISABLED'] = 'true'
+```
+This error is harmless and suppressed in the latest version.
+
+### Issue: Agent responding conversationally instead of calling tools
+**Symptom:** Agent says "You can view..." or "There is no..." instead of executing tools  
+**Solution:** Already fixed! Agent now configured as "Tool Executor" with directive to NEVER respond with text, ONLY call tools.
 
 ### Issue: "Connection refused" error
 **Solution:** Ensure Ollama is running

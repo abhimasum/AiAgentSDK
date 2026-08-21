@@ -1,0 +1,26 @@
+{
+  "todos": [
+    {
+      "id": 1,
+      "task": "Learn c#",
+      "priority": "high",
+      "description": "",
+      "created_at": "2026-08-21T14:15:22.910820",
+      "completed_at": null,
+      "is_completed": false
+    },
+    {
+      "id": 2,
+      "task": "learn java",
+      "priority": "normal",
+      "description": "",
+      "created_at": "2026-08-21T14:15:41.310099",
+      "completed_at": "2026-08-21T14:16:02.699313",
+      "is_completed": true
+    }
+  ],
+  "metadata": {
+    "created": "2026-08-21T14:15:06.259620",
+    "last_modified": "2026-08-21T14:16:02.699313"
+  }
+}

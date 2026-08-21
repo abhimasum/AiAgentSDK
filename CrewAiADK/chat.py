@@ -11,6 +11,7 @@ import logging
 warnings.filterwarnings('ignore')
 logging.getLogger().setLevel(logging.ERROR)
 os.environ['CREWAI_VERBOSE'] = '0'
+os.environ['OTEL_SDK_DISABLED'] = 'true'  # Disable OpenTelemetry to suppress errors
 
 from agent import process_user_input_async
 
@@ -19,8 +20,8 @@ async def chat():
     print("\n" + "=" * 60)
     print("Todo Manager - CrewAI + Ollama (FREE)")
     print("=" * 60)
-    print("✨ Using Ollama Qwen 2.5 (better function calling)")
-    print("💡 Make sure you have qwen2.5: ollama pull qwen2.5\n")
+    print("✨ Using Ollama Llama 3.2 (2GB, proven reliable)")
+    print("💡 Make sure you have llama3.2: ollama pull llama3.2\n")
     print("💡 TIP: Be explicit with commands for best results!\n")
     print("Examples:")
     print("  ✅ add task learn Python")
