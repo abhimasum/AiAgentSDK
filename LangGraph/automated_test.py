@@ -13,7 +13,7 @@ Run: uv run python automated_test.py
 
 import asyncio
 from agent import TodoAgent
-from todo_storage import TodoStorage
+from shared_utils.todo_storage import TodoStorage
 import os
 
 

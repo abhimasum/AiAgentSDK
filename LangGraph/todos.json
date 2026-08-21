@@ -1,22 +1,26 @@
 {
   "todos": [
     {
-      "id": 2,
-      "task": "clean house",
+      "id": 1,
+      "task": "learn python",
       "priority": "normal",
-      "created_at": "2026-08-21T17:31:46.480920",
-      "completed_at": null,
-      "is_completed": false,
-      "description": ""
+      "description": "",
+      "created_at": "2026-08-21T18:02:07.873786",
+      "completed_at": "2026-08-21T18:02:44.749428",
+      "is_completed": true
     },
     {
-      "id": 3,
-      "task": "learning C#",
-      "priority": "normal",
-      "created_at": "2026-08-21T17:40:21.473376",
-      "completed_at": "2026-08-21T17:42:37.110770",
-      "is_completed": true,
-      "description": ""
+      "id": 2,
+      "task": "exercise",
+      "priority": "high",
+      "description": "",
+      "created_at": "2026-08-21T18:02:15.938357",
+      "completed_at": "2026-08-21T18:03:00.893037",
+      "is_completed": true
     }
-  ]
+  ],
+  "metadata": {
+    "created": "2026-08-21T18:02:07.858203",
+    "last_modified": "2026-08-21T18:03:15.003088"
+  }
 }

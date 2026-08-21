@@ -5,7 +5,7 @@ Simple verification test for LangGraph agent anti-hallucination fix
 import asyncio
 import os
 from agent import TodoAgent
-from todo_storage import TodoStorage
+from shared_utils.todo_storage import TodoStorage
 
 
 async def verify_agent():

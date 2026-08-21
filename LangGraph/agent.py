@@ -20,7 +20,13 @@ User Input → Agent Node (LLM) → Tool Call?
     └─ No → End (return response)
 """
 
+import os
+import sys
 from typing import Annotated, Literal, TypedDict
+
+# Add parent directory to path for shared_utils
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from langchain_core.messages import HumanMessage, AIMessage, ToolMessage, SystemMessage
 from langchain_ollama import ChatOllama
 from langgraph.graph import StateGraph, START, END

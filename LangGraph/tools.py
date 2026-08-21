@@ -18,7 +18,7 @@ How LangGraph Binds Tools:
 """
 
 from typing import Optional
-from todo_storage import TodoStorage
+from shared_utils.todo_storage import TodoStorage
 
 
 def add_todo(task: str, priority: str = "normal", description: str = "") -> str:
