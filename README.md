@@ -1,15 +1,16 @@
 # 🤖 AI Agent Todo Management System
 
-**Learn AI agents by building a practical todo manager with 3 frameworks - All FREE with Ollama!** 🦙
+**Learn AI agents by building a practical todo manager with 4 frameworks - All FREE with Ollama!** 🦙
 
 ---
 
 ## ✨ What's New
 
-**🎉 All 3 frameworks now use Ollama (100% FREE, no API keys!):**
+**🎉 All 4 frameworks now use Ollama (100% FREE, no API keys!):**
 - ✅ **Google ADK** - Simple & fast
 - ✅ **OpenAI SDK** - OpenAI-compatible patterns  
 - ✅ **CrewAI** - Multi-agent orchestration
+- ✅ **LangGraph** - 🆕 State-based graph workflows (NEWEST!)
 
 **No credit cards, no API keys, runs completely locally!** 🆓🔒
 
@@ -39,6 +40,9 @@ cd OpenAiADK && uv sync && uv run python chat.py
 
 # CrewAI (Multi-agent)
 cd CrewAiADK && uv sync && uv run python chat.py
+
+# LangGraph (State-based) 🆕
+cd LangGraph && uv sync && uv run python chat.py
 ```
 
 **That's it!** Start chatting with your AI todo assistant! 🎯
@@ -56,17 +60,32 @@ cd CrewAiADK && uv sync && uv run python chat.py
 - **[GoogleADK/README.md](GoogleADK/README.md)** - Google ADK setup
 - **[OpenAiADK/README.md](OpenAiADK/README.md)** - OpenAI SDK setup
 - **[CrewAiADK/README.md](CrewAiADK/README.md)** - CrewAI setup
+- **[LangGraph/README.md](LangGraph/README.md)** - 🆕 LangGraph setup (State graphs)
 
 ---
 
 ## 🎯 Which Framework Should I Use?
+ Architecture |
+|-----------|----------|-------|------------|----------|-------------|
+| **Google ADK** | Learning, prototyping | ⚡ Fast | ⭐ Easy | 🆓 FREE | Direct tools |
+| **OpenAI SDK** | OpenAI patterns | ⚡ Fast | ⭐⭐ Medium | 🆓 FREE | Function calling |
+| **CrewAI** | Multi-agent systems | 🐢 Slower | ⭐⭐⭐ Complex | 🆓 FREE | Agent teams |
+| **LangGraph** | 🆕 Complex workflows | ⚡ Fast | ⭐⭐⭐ Complex | 🆓 FREE | State graphs |
 
-| Framework | Best For | Speed | Complexity | API Cost |
-|-----------|----------|-------|------------|----------|
-| **Google ADK** | Learning, prototyping | ⚡ Fast | ⭐ Easy | 🆓 FREE |
-| **OpenAI SDK** | OpenAI patterns | ⚡ Fast | ⭐⭐ Medium | 🆓 FREE |
-| **CrewAI** | Multi-agent systems | 🐢 Slower | ⭐⭐⭐ Complex | 🆓 FREE |
+**All use Llama 3.2 (2GB) - same model, different frameworks!**
 
+### When to Use LangGraph?
+
+✅ **LangGraph is best for:**
+- Complex multi-step workflows with conditional logic
+- State-driven agent behavior (conversation memory)
+- Human-in-the-loop interactions
+- Debugging complex agent flows
+- Custom routing and parallel execution
+
+❌ **Don't use LangGraph for:**
+- Simple one-shot tool calls (overkill)
+- Linear workflows without branching
 **All use Llama 3.2 (2GB) - same model, different frameworks!**
 
 ---
@@ -75,6 +94,11 @@ cd CrewAiADK && uv sync && uv run python chat.py
 
 ### **How Each Framework Uses Ollama:**
 
+
+**LangGraph** 🆕 (via LangChain):
+```python
+ChatOllama(model="llama3.2", base_url="http://localhost:11434")
+```
 **Google ADK** (via LiteLLM):
 ```python
 Agent(model="ollama_chat/llama3.2", ...)
@@ -100,23 +124,24 @@ By default, GoogleADK uses Ollama. Others can be configured to use it.
 
 ## 📖 Learning Paths
 
-### 👶 Absolute Beginner (2 hours)
-1. Read **LEARNING.md** - Understand concepts (30 min)
+### 👶 Absolute Beginner (2.5 hours)
+1. Read **LEARNING.md** - Understand concepts (40 min)
 2. Run **OpenAI SDK** - Simplest framework (20 min)
 3. Test all operations (15 min)
 4. Try **CrewAI** (20 min)
 5. Try **Google ADK** (20 min)
-6. Experiment & customize (15 min)
-
-### 👨‍💻 Developer (1.5 hours)
-1. Read **LEARNING.md** - Theory (20 min)
-2. Try all 3 frameworks (60 min)
+6. Try **LangGraph** 🆕 (25 min - includes state graph concepts)
+7. Experiment & customize (15 min)
+2 hours)
+1. Read **LEARNING.md** - Theory + LangGraph deep dive (30 min)
+2. Try all 4 frameworks (80 min)
 3. Customize configuration (15 min)
+4. Add new tools (15ration (15 min)
 4. Add new tools (10 min)
-
-### 🏭 Production (3+ hours)
-1. Deep study of **LEARNING.md**
-2. Read all 3 framework READMEs
+4+ hours)
+1. Deep study of **LEARNING.md** (includes LangGraph theory)
+2. Read all 4 framework READMEs
+3. Choose best framework for your use caseREADMEs
 3. Choose best framework
 4. Customize thoroughly
 5. Plan deployment
@@ -125,7 +150,7 @@ By default, GoogleADK uses Ollama. Others can be configured to use it.
 
 ## 🎯 What Each Framework README Includes
 
-Each framework folder (OpenAiADK, CrewAiADK, GoogleADK) has a **README.md** with:
+Each framework folder (OpenAiADK, CrewAiADK, GoogleADK, LangGraph) has a **README.md** with:
 
 ✅ Complete setup instructions  
 ✅ Installation with pip & uv  
@@ -134,6 +159,12 @@ Each framework folder (OpenAiADK, CrewAiADK, GoogleADK) has a **README.md** with
 ✅ Troubleshooting (20+ scenarios)  
 ✅ Code explanations  
 ✅ Example interactions  
+
+**LangGraph README includes:**
+✅ State graph deep dive
+✅ Node and edge explanations
+✅ State management patterns
+✅ Advanced routing examples
 
 ---
 
@@ -157,12 +188,7 @@ Each framework folder (OpenAiADK, CrewAiADK, GoogleADK) has a **README.md** with
 - ✅ **uv** - Modern, faster (pyproject.toml)
 
 ---
-
-## 🏗️ Project Structure
-
-```
-AiAgentSDK/
-├── LEARNING.md                    # Theory & concepts
+ (includes LangGraph deep dive)
 ├── README.md                      # This file
 │
 ├── OpenAiADK/                     # Simplest ⭐
@@ -183,10 +209,24 @@ AiAgentSDK/
 │   ├── tools.py
 │   └── config.yaml
 │
+├── LangGraph/                     # 🆕 State-based (Complex workflows)
+│   ├── README.md                  # Comprehensive guide
+│   ├── agent.py                   # StateGraph implementation
+│   ├── tools.py                   # Tool definitions
+│   ├── chat.py                    # Interactive CLI
+│   ├── todo_storage.py            # Storage layer
+│   └── automated_test.py          # Test suite
+├── GoogleADK/                     # Advanced (Ollama default)
+│   ├── README.md
+│   ├── main.py
+│   ├── tools.py
+│   └── config.yaml
+│
 └── shared_utils/
     └── todo_storage.py            # Shared JSON storage
 ```
 
+- **Complex workflows?** → 🆕 LangGraph
 ---
 
 ## ❓ Common Questions

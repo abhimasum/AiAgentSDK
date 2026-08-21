@@ -1,0 +1,12 @@
+[project]
+name = "langgraph-todo-agent"
+version = "0.1.0"
+description = "Todo management agent using LangGraph with Ollama"
+requires-python = ">=3.10"
+dependencies = [
+    "langgraph>=0.2.0",
+    "langchain>=0.3.0",
+    "langchain-ollama>=0.2.0",
+    "langchain-core>=0.3.0",
+    "rich>=13.7.0",
+]

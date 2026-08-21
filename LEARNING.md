@@ -20,10 +20,11 @@ Master the fundamentals of AI agents through building a practical todo managemen
 
 ## Overview
 
-This project demonstrates building a **Todo Management Agent** using three different AI agent frameworks:
+This project demonstrates building a **Todo Management Agent** using four different AI agent frameworks:
 - **CrewAI** - Multi-agent framework with task orchestration
 - **OpenAI Agents SDK** - Agent framework with tool orchestration
 - **Google ADK** - Advanced agent framework with MCP support
+- **LangGraph** - State-based graph framework for complex workflows
 
 All frameworks integrate with **Ollama** (local LLM) for privacy and cost-effectiveness.
 
@@ -114,6 +115,17 @@ AiAgentSDK/
 │   ├── config.yaml
 │   ├── main.py
 │   └── todos.json
+│
+├── LangGraph/                     # LangGraph Implementation
+│   ├── README.md                  # Comprehensive guide
+│   ├── pyproject.toml             # uv dependencies
+│   ├── requirements.txt           # pip dependencies
+│   ├── todo_storage.py            # JSON storage handler
+│   ├── tools.py                   # Tool definitions
+│   ├── agent.py                   # StateGraph implementation
+│   ├── chat.py                    # Interactive CLI
+│   ├── automated_test.py          # Test suite
+│   └── todos.json                 # Todo database (generated)
 │
 └── shared_utils/                  # Shared utilities
     ├── __init__.py
@@ -305,16 +317,614 @@ User          Agent        LLM           Tools        Storage
 
 ## Framework Comparison
 
-| Aspect | CrewAI | OpenAI SDK | Google ADK |
-|--------|--------|-----------|-----------|
-| **Agent Model** | Multi-agent crews | Single/Multi agent | LlmAgent with tools |
-| **Tool Definition** | @tool decorator | @function_tool | Typed functions |
-| **Orchestration** | Task-based | Tool-based | Tool + MCP |
-| **Config** | YAML files | Python dicts | YAML/Config classes |
-| **Learning Curve** | Medium | Easy | Medium |
-| **Best For** | Complex workflows | Simple orchestration | MCP integration |
-| **Debugging** | CLI tools | OpenAI dashboard | Web console |
-| **Cost** | Local LLM support | API-based | Flexible |
+| Aspect | CrewAI | OpenAI SDK | Google ADK | LangGraph |
+|--------|--------|-----------|-----------|-----------|
+| **Agent Model** | Multi-agent crews | Single/Multi agent | LlmAgent with tools | State-based graph |
+| **Tool Definition** | @tool decorator | @function_tool | Typed functions | Regular functions |
+| **Orchestration** | Task-based | Tool-based | Tool + MCP | Graph-based |
+| **State Management** | Implicit | Implicit | Implicit | **Explicit** |
+| **Config** | YAML files | Python dicts | YAML/Config classes | Python code |
+| **Learning Curve** | Medium | Easy | Medium | **Medium-High** |
+| **Best For** | Complex workflows | Simple orchestration | MCP integration | **Complex state flows** |
+| **Debugging** | CLI tools | OpenAI dashboard | Web console | **State inspection** |
+| **Flexibility** | Medium | Low | Medium | **Very High** |
+| **Cost** | Local LLM support | API-based | Flexible | Local LLM support |
+
+### Key Differentiators
+
+#### CrewAI
+- **Focus**: Teams of specialized agents working together
+- **Strength**: Task delegation and role-based workflows
+- **Use Case**: Complex projects requiring multiple expertise areas
+
+#### OpenAI SDK
+- **Focus**: Simple tool calling with minimal setup
+- **Strength**: Easy integration with OpenAI models
+- **Use Case**: Straightforward automation tasks
+
+#### Google ADK
+- **Focus**: MCP (Model Context Protocol) integration
+- **Strength**: Standardized tool interfaces
+- **Use Case**: Cross-platform agent deployments
+
+#### LangGraph
+- **Focus**: State machines and complex control flow
+- **Strength**: Full control over agent reasoning and routing
+- **Use Case**: Multi-step workflows with conditional logic, human-in-the-loop, debugging visibility
+
+---
+
+## LangGraph Deep Dive 🔷
+
+### What Makes LangGraph Different?
+
+LangGraph treats agent behavior as a **state machine** rather than a linear process. This paradigm shift enables:
+
+1. **Explicit State Management**: State is a first-class citizen
+2. **Complex Routing**: Conditional logic determines next steps
+3. **Debugging Visibility**: Inspect state at any point in the graph
+4. **Human-in-the-Loop**: Pause for human input at any node
+
+### Core Architecture
+
+```
+┌──────────────────────────────────────────────────────────┐
+│                    LangGraph Agent                        │
+│                                                           │
+│  ┌─────────┐     ┌──────────┐     ┌──────────┐          │
+│  │  State  │────▶│   Node   │────▶│  State'  │          │
+│  │ (Input) │     │(Function)│     │ (Output) │          │
+│  └─────────┘     └──────────┘     └──────────┘          │
+│                        │                                  │
+│                        │                                  │
+│                   ┌────▼────┐                            │
+│                   │  Edges  │ (Route to next node)       │
+│                   └────┬────┘                            │
+│                        │                                  │
+│              ┌─────────┴─────────┐                       │
+│              │                   │                       │
+│         Static Edge        Conditional Edge              │
+│        (Always goes)      (Decides based on state)       │
+└──────────────────────────────────────────────────────────┘
+```
+
+### 1. State: The Foundation
+
+**State is a TypedDict that flows through every node.**
+
+```python
+from typing import Annotated, TypedDict
+from langgraph.graph.message import add_messages
+
+class AgentState(TypedDict):
+    """
+    State structure shared across all nodes.
+    Think of it as the 'context' or 'memory' of the agent.
+    """
+    messages: Annotated[list, add_messages]
+```
+
+#### Why `Annotated[list, add_messages]`?
+
+Without annotation:
+```python
+# Node 1 returns
+{"messages": [Message1]}
+
+# Node 2 returns
+{"messages": [Message2]}
+
+# Final state (WRONG - Message1 lost!)
+{"messages": [Message2]}
+```
+
+With `add_messages` annotation:
+```python
+# Node 1 returns
+{"messages": [Message1]}
+
+# Node 2 returns
+{"messages": [Message2]}
+
+# Final state (CORRECT - both preserved)
+{"messages": [Message1, Message2]}
+```
+
+**Key Point**: `add_messages` is a **reducer function** that tells LangGraph to **merge** lists instead of replacing them.
+
+#### State Evolution Example
+
+```python
+# User input
+state_0 = {
+    "messages": [HumanMessage(content="Add task: write report")]
+}
+
+# After agent node (LLM decides to call tool)
+state_1 = {
+    "messages": [
+        HumanMessage(content="Add task: write report"),
+        AIMessage(tool_calls=[{"name": "add_todo", "args": {...}}])
+    ]
+}
+
+# After tool node (tool executed)
+state_2 = {
+    "messages": [
+        HumanMessage(content="Add task: write report"),
+        AIMessage(tool_calls=[...]),
+        ToolMessage(content='{"id": 1, "status": "created"}')
+    ]
+}
+
+# After agent node (LLM verifies and responds)
+state_3 = {
+    "messages": [
+        HumanMessage(content="Add task: write report"),
+        AIMessage(tool_calls=[...]),
+        ToolMessage(content='{"id": 1, "status": "created"}'),
+        AIMessage(content="✓ Added task: write report")
+    ]
+}
+```
+
+### 2. Nodes: State Processors
+
+**Nodes are functions that receive state, perform work, and return state updates.**
+
+```python
+def call_agent(state: AgentState) -> AgentState:
+    """
+    Agent node: LLM processes conversation and decides next action.
+    
+    Input: state with messages
+    Processing: 
+        - LLM analyzes conversation history
+        - Decides whether to call tools or respond
+    Output: state with new AI message added
+    """
+    llm = create_llm()  # LLM with tools bound
+    response = llm.invoke(state["messages"])
+    
+    # Return state update (will be merged with existing state)
+    return {"messages": [response]}
+```
+
+#### Node Rules
+
+1. **Input**: Always receives `AgentState`
+2. **Immutability**: Original state is never modified
+3. **Output**: Returns dictionary with state updates
+4. **Merging**: LangGraph merges output with existing state
+
+#### Node Types in Our Agent
+
+| Node | Purpose | Input | Output |
+|------|---------|-------|--------|
+| `agent` | LLM reasoning | Messages | AI response (text or tool_calls) |
+| `tools` | Tool execution | AI tool_calls | Tool results (ToolMessage) |
+
+### 3. Edges: Flow Control
+
+Edges define **how state moves between nodes**.
+
+#### A. Normal Edges (Static)
+
+```python
+workflow.add_edge(START, "agent")
+# Meaning: Always start at "agent" node
+```
+
+```python
+workflow.add_edge("tools", "agent")
+# Meaning: After "tools" node, always go to "agent" node
+```
+
+#### B. Conditional Edges (Dynamic)
+
+```python
+workflow.add_conditional_edges(
+    "agent",           # From this node
+    should_continue,   # Router function decides next step
+    {
+        "tools": "tools",  # If router returns "tools", go to tools node
+        "end": END         # If router returns "end", finish
+    }
+)
+```
+
+**Router Function:**
+```python
+def should_continue(state: AgentState) -> Literal["tools", "end"]:
+    """
+    Examine state and decide which path to take.
+    
+    This is where you implement custom logic!
+    """
+    last_message = state["messages"][-1]
+    
+    # Decision logic
+    if hasattr(last_message, "tool_calls") and last_message.tool_calls:
+        return "tools"  # LLM wants to use tools
+    
+    return "end"  # No tools needed, we're done
+```
+
+### 4. Graph: The Complete Flow
+
+**Graph = Nodes + Edges**
+
+```python
+def create_graph():
+    # Initialize graph with state schema
+    workflow = StateGraph(AgentState)
+    
+    # Add nodes (functions that process state)
+    workflow.add_node("agent", call_agent)
+    workflow.add_node("tools", ToolNode(TOOLS))
+    
+    # Add edges (define flow)
+    workflow.add_edge(START, "agent")  # Entry point
+    
+    # Conditional routing
+    workflow.add_conditional_edges(
+        "agent",
+        should_continue,
+        {"tools": "tools", "end": END}
+    )
+    
+    # Loop back after tools
+    workflow.add_edge("tools", "agent")
+    
+    # Compile graph
+    return workflow.compile()
+```
+
+#### Visual Representation
+
+```
+     START
+       │
+       ▼
+   ┌─────────┐
+   │  agent  │ ◄──────────┐
+   └────┬────┘            │
+        │                 │
+        │ (should_continue?)
+        │                 │
+    ┌───┴───┐             │
+    │       │             │
+    ▼       ▼             │
+ tools     END            │
+    │                     │
+    └─────────────────────┘
+```
+
+### 5. Tool Binding in LangGraph
+
+**How LangGraph connects tools to the LLM:**
+
+#### Step 1: Define Tools
+
+```python
+def add_todo(task: str, priority: str = "normal") -> dict:
+    """
+    Add a new todo item.
+    
+    Args:
+        task: Task description
+        priority: Priority level (low/normal/high)
+    
+    Returns:
+        Dictionary with id, status, and task
+    """
+    storage = TodoStorage()
+    return storage.add_todo(task, priority)
+```
+
+#### Step 2: Extract Schema
+
+LangGraph automatically extracts:
+```json
+{
+  "name": "add_todo",
+  "description": "Add a new todo item.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "task": {"type": "string"},
+      "priority": {
+        "type": "string",
+        "default": "normal"
+      }
+    },
+    "required": ["task"]
+  }
+}
+```
+
+#### Step 3: Bind to LLM
+
+```python
+llm = ChatOllama(model="llama3.2")
+llm_with_tools = llm.bind_tools([add_todo, get_todos, ...])
+```
+
+Now when you call `llm_with_tools.invoke(messages)`, the LLM:
+1. Receives tool schemas
+2. Analyzes user request
+3. Returns either:
+   - Text response: `AIMessage(content="...")`
+   - Tool call: `AIMessage(tool_calls=[...])`
+
+#### Step 4: Execute Tools
+
+```python
+# ToolNode automatically handles tool execution
+tool_node = ToolNode([add_todo, get_todos, ...])
+
+# When agent returns tool_calls, ToolNode:
+# 1. Extracts tool_calls from AIMessage
+# 2. Calls corresponding Python functions
+# 3. Returns ToolMessage with results
+```
+
+### 6. Execution Flow: Complete Example
+
+**User Input**: "Add task: write report with high priority"
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ Step 1: Initial State                                       │
+│                                                              │
+│ state = {                                                    │
+│   "messages": [                                              │
+│     HumanMessage("Add task: write report with high priority")│
+│   ]                                                          │
+│ }                                                            │
+└─────────────────────────────────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────┐
+│ Step 2: Agent Node (call_agent)                             │
+│                                                              │
+│ - LLM receives messages                                      │
+│ - Sees tool schemas (add_todo, get_todos, ...)              │
+│ - Analyzes: "User wants to add todo with high priority"     │
+│ - Decision: Call add_todo()                                  │
+│                                                              │
+│ Returns: AIMessage(                                          │
+│   tool_calls=[{                                              │
+│     "name": "add_todo",                                      │
+│     "args": {"task": "write report", "priority": "high"}    │
+│   }]                                                         │
+│ )                                                            │
+└─────────────────────────────────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────┐
+│ Step 3: State After Agent                                   │
+│                                                              │
+│ state = {                                                    │
+│   "messages": [                                              │
+│     HumanMessage("Add task: ..."),                          │
+│     AIMessage(tool_calls=[...])  ← NEW                       │
+│   ]                                                          │
+│ }                                                            │
+└─────────────────────────────────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────┐
+│ Step 4: Conditional Edge (should_continue)                  │
+│                                                              │
+│ - Checks last message for tool_calls                        │
+│ - Finds: tool_calls exist                                   │
+│ - Returns: "tools"                                          │
+│ - Graph routes to tools node                                │
+└─────────────────────────────────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────┐
+│ Step 5: Tools Node (ToolNode)                               │
+│                                                              │
+│ - Extracts tool_calls from AIMessage                        │
+│ - Calls: add_todo(task="write report", priority="high")    │
+│ - Receives: {"id": 1, "status": "created", ...}            │
+│                                                              │
+│ Returns: ToolMessage(                                        │
+│   content='{"id": 1, "status": "created", ...}'             │
+│ )                                                            │
+└─────────────────────────────────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────┐
+│ Step 6: State After Tools                                   │
+│                                                              │
+│ state = {                                                    │
+│   "messages": [                                              │
+│     HumanMessage("Add task: ..."),                          │
+│     AIMessage(tool_calls=[...]),                            │
+│     ToolMessage(content='{"id": 1, ...}')  ← NEW            │
+│   ]                                                          │
+│ }                                                            │
+└─────────────────────────────────────────────────────────────┘
+                           │
+                           ▼ (Edge: tools → agent)
+┌─────────────────────────────────────────────────────────────┐
+│ Step 7: Agent Node Again (Verification)                     │
+│                                                              │
+│ - LLM receives all messages (including ToolMessage)         │
+│ - Sees tool result: {"id": 1, "status": "created", ...}    │
+│ - Generates human-friendly response                         │
+│                                                              │
+│ Returns: AIMessage(                                          │
+│   content="✓ Added task: write report (ID: 1, high priority)"│
+│ )                                                            │
+└─────────────────────────────────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────┐
+│ Step 8: Final State                                         │
+│                                                              │
+│ state = {                                                    │
+│   "messages": [                                              │
+│     HumanMessage("Add task: ..."),                          │
+│     AIMessage(tool_calls=[...]),                            │
+│     ToolMessage(content='{"id": 1, ...}'),                  │
+│     AIMessage(content="✓ Added task: ...")  ← NEW           │
+│   ]                                                          │
+│ }                                                            │
+└─────────────────────────────────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────┐
+│ Step 9: Conditional Edge (should_continue)                  │
+│                                                              │
+│ - Checks last message for tool_calls                        │
+│ - Finds: No tool_calls (just text response)                 │
+│ - Returns: "end"                                            │
+│ - Graph routes to END                                       │
+└─────────────────────────────────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────┐
+│ Step 10: END                                                │
+│                                                              │
+│ - Extract final message content                             │
+│ - Return to user: "✓ Added task: write report (ID: 1, ...)" │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 7. Why LangGraph for Complex Workflows?
+
+#### Scenario: Multi-step Research Agent
+
+**Traditional Agent Problem:**
+```
+User: "Research competitors and create a report"
+
+Agent: Calls search_tool() → Gets 100 results
+       [Tries to process all at once, runs out of context]
+       Returns: Incomplete response
+```
+
+**LangGraph Solution:**
+```python
+def create_research_graph():
+    workflow = StateGraph(ResearchState)
+    
+    workflow.add_node("search", search_competitors)
+    workflow.add_node("filter", filter_relevant)
+    workflow.add_node("analyze", analyze_data)
+    workflow.add_node("report", generate_report)
+    workflow.add_node("review", human_review)
+    
+    workflow.add_edge(START, "search")
+    workflow.add_edge("search", "filter")
+    workflow.add_edge("filter", "analyze")
+    workflow.add_edge("analyze", "report")
+    
+    # Conditional: human review if confidence low
+    workflow.add_conditional_edges(
+        "report",
+        check_confidence,
+        {
+            "review": "review",  # Low confidence → human review
+            "end": END           # High confidence → done
+        }
+    )
+    
+    workflow.add_edge("review", END)
+    
+    return workflow.compile()
+```
+
+**Benefits:**
+- Each step is isolated and testable
+- State carries intermediate results
+- Human can intervene at specific points
+- Easy to debug (inspect state at each node)
+
+### 8. Advanced Patterns
+
+#### A. Parallel Execution
+
+```python
+# Execute multiple nodes in parallel
+workflow.add_node("fetch_news", fetch_news)
+workflow.add_node("fetch_social", fetch_social)
+workflow.add_node("fetch_reports", fetch_reports)
+
+# All fetch nodes run in parallel
+workflow.add_edge(START, "fetch_news")
+workflow.add_edge(START, "fetch_social")
+workflow.add_edge(START, "fetch_reports")
+
+# Merge results
+workflow.add_node("merge", merge_results)
+workflow.add_edge("fetch_news", "merge")
+workflow.add_edge("fetch_social", "merge")
+workflow.add_edge("fetch_reports", "merge")
+```
+
+#### B. Loops and Retries
+
+```python
+def should_retry(state: AgentState) -> Literal["retry", "end"]:
+    """Retry if result not satisfactory"""
+    if state["attempts"] < 3 and not state["success"]:
+        return "retry"
+    return "end"
+
+workflow.add_conditional_edges(
+    "process",
+    should_retry,
+    {
+        "retry": "process",  # Loop back
+        "end": END
+    }
+)
+```
+
+#### C. Human-in-the-Loop
+
+```python
+def wait_for_approval(state: AgentState) -> AgentState:
+    """Pause and wait for human input"""
+    print(f"Review this: {state['draft']}")
+    approval = input("Approve? (yes/no): ")
+    
+    state["approved"] = (approval.lower() == "yes")
+    return state
+
+workflow.add_node("human_review", wait_for_approval)
+```
+
+### 9. Key Takeaways
+
+| Concept | Description | Why It Matters |
+|---------|-------------|----------------|
+| **State** | Shared data structure | Maintains context across nodes |
+| **Nodes** | Functions that process state | Modular, testable logic |
+| **Edges** | Define transitions | Control flow (static or conditional) |
+| **Graph** | Nodes + Edges | Complete agent workflow |
+| **Tool Binding** | LLM knows available functions | Autonomous tool calling |
+| **Conditional Routing** | State-based decisions | Complex workflows |
+
+### 10. When to Use LangGraph
+
+✅ **Use LangGraph for:**
+- Multi-step workflows with decision points
+- Agents that need state persistence
+- Complex routing logic
+- Human-in-the-loop scenarios
+- Debugging complex agent behavior
+- Parallel execution needs
+
+❌ **Don't use LangGraph for:**
+- Simple one-shot tool calls
+- Linear workflows without branching
+- Stateless question-answering
 
 ---
 
@@ -351,6 +961,21 @@ def add_todo(task: str, priority: str = "normal") -> dict:
 # Pass to agent: tools=[add_todo]
 ```
 
+**LangGraph:**
+```python
+def add_todo(task: str, priority: str = "normal") -> dict:
+    """Add a new todo item"""
+    storage = TodoStorage()
+    return storage.add_todo(task, priority)
+
+# Bind to LLM
+llm = ChatOllama(model="llama3.2")
+llm_with_tools = llm.bind_tools([add_todo, get_todos, ...])
+
+# Use in ToolNode
+tool_node = ToolNode([add_todo, get_todos, ...])
+```
+
 ### 2. **Agent Initialization**
 
 **CrewAI:**
@@ -384,6 +1009,37 @@ agent = LlmAgent(
     instruction="You manage todos using available tools",
     tools=[add_todo, complete_todo, get_todos]
 )
+```
+
+**LangGraph:**
+```python
+# Define state
+class AgentState(TypedDict):
+    messages: Annotated[list, add_messages]
+
+# Create graph
+workflow = StateGraph(AgentState)
+
+# Add nodes
+def call_agent(state):
+    llm = ChatOllama(model="llama3.2").bind_tools(TOOLS)
+    response = llm.invoke(state["messages"])
+    return {"messages": [response]}
+
+workflow.add_node("agent", call_agent)
+workflow.add_node("tools", ToolNode(TOOLS))
+
+# Add edges
+workflow.add_edge(START, "agent")
+workflow.add_conditional_edges(
+    "agent",
+    should_continue,  # Router function
+    {"tools": "tools", "end": END}
+)
+workflow.add_edge("tools", "agent")
+
+# Compile
+agent = workflow.compile()
 ```
 
 ### 3. **Storage Pattern**
@@ -549,6 +1205,14 @@ Each framework has a dedicated README with testing instructions.
 | **Persistence** | Data saved to disk (JSON in our case) |
 | **Agent Loop** | Continuous cycle: perceive → reason → act → observe |
 | **Schema** | Description of tool parameters (helps LLM choose tools) |
+| **State** | Shared data structure in LangGraph (conversation context) |
+| **Node** | Function in LangGraph that processes state |
+| **Edge** | Transition between nodes (static or conditional) |
+| **Graph** | Complete workflow (nodes + edges) in LangGraph |
+| **Reducer** | Function that merges state updates (e.g., `add_messages`) |
+| **StateGraph** | LangGraph class for building stateful agents |
+| **ToolNode** | LangGraph node that executes tool calls |
+| **Conditional Edge** | Edge that routes based on state inspection |
 
 ---
 

@@ -1,0 +1,22 @@
+{
+  "todos": [
+    {
+      "id": 1,
+      "task": "learn python",
+      "priority": "normal",
+      "created_at": "2026-08-21T14:36:45.120342",
+      "completed_at": "2026-08-21T14:37:09.938029",
+      "is_completed": true,
+      "description": ""
+    },
+    {
+      "id": 2,
+      "task": "exercise",
+      "priority": "high",
+      "created_at": "2026-08-21T14:36:51.512058",
+      "completed_at": null,
+      "is_completed": false,
+      "description": ""
+    }
+  ]
+}
