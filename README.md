@@ -1,53 +1,98 @@
 # 🤖 AI Agent Todo Management System
 
-Learn AI agents by building a practical todo management system with three frameworks.
+**Learn AI agents by building a practical todo manager with 3 frameworks - All FREE with Ollama!** 🦙
 
 ---
 
-## 📚 Essential Documentation (4 Documents Only)
+## ✨ What's New
 
-1. **LEARNING.md** - Complete theory & concepts (read first for understanding)
-2. **CrewAiADK/README.md** - CrewAI setup & testing guide
-3. **OpenAiADK/README.md** - OpenAI SDK setup & testing guide  
-4. **GoogleADK/README.md** - Google ADK with Ollama setup & testing guide
+**🎉 All 3 frameworks now use Ollama (100% FREE, no API keys!):**
+- ✅ **Google ADK** - Simple & fast
+- ✅ **OpenAI SDK** - OpenAI-compatible patterns  
+- ✅ **CrewAI** - Multi-agent orchestration
+
+**No credit cards, no API keys, runs completely locally!** 🆓🔒
 
 ---
 
-## 🚀 Quick Start (10 minutes)
+## 🚀 Quick Start (3 Steps)
 
-### Step 1: Choose Your Framework
-
-| Framework | Best For | Setup | Difficulty |
-|-----------|----------|-------|------------|
-| **OpenAI SDK** | Learning | 10 min | Easy ⭐ |
-| **CrewAI** | Production | 15 min | Medium |
-| **Google ADK** | Advanced | 15 min | Medium |
-
-### Step 2: Install & Run
-
+### **Step 1: Install Ollama**
 ```bash
-# Pick one framework
-cd OpenAiADK    # Start here (easiest)
-
-# Install dependencies
-pip install -r requirements.txt
-# OR: uv sync
-
-# Run the agent
-python main.py
-
-# Try: "Add task: learn AI agents"
+# Download from: https://ollama.ai
+# Or Windows: winget install Ollama.Ollama
 ```
 
-### Step 3: Run Ollama (Optional but Recommended - Free & Private)
-
+### **Step 2: Get the Model**
 ```bash
-# Terminal 1: Start Ollama (free, local, private)
+ollama pull llama3.2
 ollama serve
-
-# Terminal 2: Pull a model
-ollama pull mistral  # or: llama2, neural-chat
 ```
+
+### **Step 3: Run Any Framework**
+```bash
+# Google ADK (Simplest)
+cd GoogleADK && uv sync && uv run python chat.py
+
+# OpenAI SDK (OpenAI-compatible)
+cd OpenAiADK && uv sync && uv run python chat.py
+
+# CrewAI (Multi-agent)
+cd CrewAiADK && uv sync && uv run python chat.py
+```
+
+**That's it!** Start chatting with your AI todo assistant! 🎯
+
+---
+
+## 📚 Documentation
+
+### **Start Here:**
+1. **[OLLAMA_SETUP.md](OLLAMA_SETUP.md)** - Setup guide for all frameworks (10 min)
+2. **[MULTI_FRAMEWORK_GUIDE.md](MULTI_FRAMEWORK_GUIDE.md)** - Compare frameworks
+3. **[TEST_RESULTS.md](TEST_RESULTS.md)** - Validation & test results
+
+### **Framework Guides:**
+- **[GoogleADK/README.md](GoogleADK/README.md)** - Google ADK setup
+- **[OpenAiADK/README.md](OpenAiADK/README.md)** - OpenAI SDK setup
+- **[CrewAiADK/README.md](CrewAiADK/README.md)** - CrewAI setup
+
+---
+
+## 🎯 Which Framework Should I Use?
+
+| Framework | Best For | Speed | Complexity | API Cost |
+|-----------|----------|-------|------------|----------|
+| **Google ADK** | Learning, prototyping | ⚡ Fast | ⭐ Easy | 🆓 FREE |
+| **OpenAI SDK** | OpenAI patterns | ⚡ Fast | ⭐⭐ Medium | 🆓 FREE |
+| **CrewAI** | Multi-agent systems | 🐢 Slower | ⭐⭐⭐ Complex | 🆓 FREE |
+
+**All use Llama 3.2 (2GB) - same model, different frameworks!**
+
+---
+
+## 🦙 Ollama Integration
+
+### **How Each Framework Uses Ollama:**
+
+**Google ADK** (via LiteLLM):
+```python
+Agent(model="ollama_chat/llama3.2", ...)
+```
+
+**OpenAI SDK** (OpenAI-compatible endpoint):
+```python
+OpenAI(base_url="http://localhost:11434/v1", ...)
+```
+
+**CrewAI** (via LLM wrapper):
+```python
+LLM(model="ollama/llama3.2", base_url="http://localhost:11434")
+```
+
+---
+
+## 📦 Project Structure
 
 By default, GoogleADK uses Ollama. Others can be configured to use it.
 
