@@ -28,7 +28,7 @@ def print_banner():
     banner = """
     # 🤖 LangGraph Todo Agent
     
-    **Using Ollama Qwen 2.5 7B (4.7GB)** - Optimized for tool calling
+    **Using Ollama Qwen 2.5 14B (~9GB)** - Superior for complex tool chaining
     
     ⚠️ **IMPORTANT**: This agent uses REAL tools - it only shows actual tasks from storage.
     It will NOT make up tasks. If you see empty results, you truly have no tasks.

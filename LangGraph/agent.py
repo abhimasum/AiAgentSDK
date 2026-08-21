@@ -84,7 +84,7 @@ def create_llm():
         LLM instance bound with tools
     """
     llm = ChatOllama(
-        model="qwen2.5:latest",  # Qwen 2.5 7B (4.7GB) - Better at tool calling
+        model="qwen2.5:14b",  # Qwen 2.5 14B (~9GB) - Superior for complex tool chaining
         temperature=0.0,   # Zero temperature to prevent creativity/hallucinations
         base_url="http://localhost:11434"  # Ollama server
     )

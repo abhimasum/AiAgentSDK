@@ -2,25 +2,25 @@
   "todos": [
     {
       "id": 1,
-      "task": "learn python",
+      "task": "buy milk",
       "priority": "normal",
       "description": "",
-      "created_at": "2026-08-21T18:02:07.873786",
-      "completed_at": "2026-08-21T18:02:44.749428",
+      "created_at": "2026-08-21T19:37:26.008461",
+      "completed_at": "2026-08-21T19:38:20.189416",
       "is_completed": true
     },
     {
       "id": 2,
-      "task": "exercise",
-      "priority": "high",
+      "task": "clean house",
+      "priority": "normal",
       "description": "",
-      "created_at": "2026-08-21T18:02:15.938357",
-      "completed_at": "2026-08-21T18:03:00.893037",
-      "is_completed": true
+      "created_at": "2026-08-21T19:38:33.853364",
+      "completed_at": null,
+      "is_completed": false
     }
   ],
   "metadata": {
-    "created": "2026-08-21T18:02:07.858203",
-    "last_modified": "2026-08-21T18:03:15.003088"
+    "created": "2026-08-21T19:37:10.007775",
+    "last_modified": "2026-08-21T19:38:33.853364"
   }
 }
