@@ -8,7 +8,7 @@ LangGraph Tool Pattern:
 1. Define regular Python functions
 2. Use type hints (LangGraph extracts these for schemas)
 3. Write detailed docstrings (LLM reads these to understand tool purpose)
-4. Return structured data (dictionaries or strings)
+4. Return FORMATTED STRINGS (easier for small LLMs to parse than complex dicts)
 
 How LangGraph Binds Tools:
 - tools are passed to the LLM via .bind_tools(tools)
@@ -21,10 +21,10 @@ from typing import Optional
 from todo_storage import TodoStorage
 
 
-def add_todo(task: str, priority: str = "normal", description: str = "") -> dict:
-    """Add a new todo item to the list.
+def add_todo(task: str, priority: str = "normal", description: str = "") -> str:
+    """Add a NEW todo item. Use this ONLY when user wants to ADD or CREATE a new task.
     
-    Use this tool when the user wants to add a new task, create a todo, or remember something to do.
+    Use keywords: 'add', 'create', 'new task'. DO NOT use if user says 'complete', 'done', or 'finish'.
     
     Args:
         task: Brief description of the task (required)
@@ -33,27 +33,39 @@ def add_todo(task: str, priority: str = "normal", description: str = "") -> dict
     """
     storage = TodoStorage()
     result = storage.add_todo(task, priority, description)
-    return result
+    # Return formatted string for LLM
+    return f"✅ Added task #{result['id']}: {result['task']} (priority: {result['priority']})"
 
 
-def get_todos(include_completed: bool = False) -> list:
-    """Retrieve all todos from the list.
+def get_todos(include_completed: bool = False) -> str:
+    """Retrieve all todos from the list. ALWAYS call this to see tasks - do NOT make up task data.
     
-    Use this tool when the user wants to see their tasks, list todos, view what's on their list, or check what they need to do.
+    When user asks questions like: 'show tasks', 'list todos', 'what tasks do I have', call this tool FIRST before answering.
     
     Args:
         include_completed: If True, shows all todos including completed ones. If False, shows only incomplete todos (default)
     """
     storage = TodoStorage()
-    result = storage.get_todos(include_completed)
-    return result
-
-
-def complete_todo(todo_id: Optional[int] = None, description: Optional[str] = None) -> dict:
-    """Mark a todo as complete.
+    todos = storage.get_todos(include_completed)
     
-    Use this tool when the user wants to mark a task as done, complete a todo, or check off an item.
-    You can complete by exact ID (todo_id=5) or by description search (description='report' finds first todo containing 'report').
+    # Format as human-readable string
+    if not todos:
+        return "📋 You have NO tasks."
+    
+    lines = [f"📋 You have {len(todos)} task(s):"]
+    for todo in todos:
+        status = "✅" if todo['is_completed'] else "○"
+        priority_icon = {"high": "🔴", "normal": "🟡", "low": "🟢"}.get(todo['priority'], "○")
+        lines.append(f"  {status} #{todo['id']}: {todo['task']} {priority_icon}")
+    
+    return "\n".join(lines)
+
+
+def complete_todo(todo_id: Optional[int] = None, description: Optional[str] = None) -> str:
+    """Mark an EXISTING todo as complete. Use this when user says 'complete', 'done', 'finish', or 'mark as done'.
+    
+    DO NOT call add_todo if user says 'complete'. Call complete_todo instead.
+    Examples: 'complete buy milk', 'mark task 1 as done', 'finish the report task'
     
     Args:
         todo_id: Exact ID of the todo to complete
@@ -61,10 +73,17 @@ def complete_todo(todo_id: Optional[int] = None, description: Optional[str] = No
     """
     storage = TodoStorage()
     result = storage.complete_todo(todo_id, description)
-    return result
+    
+    # Format response
+    if result['status'] == 'completed':
+        return f"✅ Completed task #{result['id']}: {result['task']}"
+    elif result['status'] == 'already_completed':
+        return f"ℹ️ Task #{result['id']}: {result['task']} was already completed"
+    else:
+        return f"❌ Error: {result['message']}"
 
 
-def delete_todo(todo_id: int) -> dict:
+def delete_todo(todo_id: int) -> str:
     """Permanently delete a todo from the list.
     
     Use this tool when the user wants to remove a task, delete a todo, or get rid of an item.
@@ -74,17 +93,28 @@ def delete_todo(todo_id: int) -> dict:
     """
     storage = TodoStorage()
     result = storage.delete_todo(todo_id)
-    return result
+    
+    if result['status'] == 'deleted':
+        return f"🗑️ Deleted task #{result['id']}"
+    else:
+        return f"❌ Error: {result['message']}"
 
 
-def get_todo_stats() -> dict:
+def get_todo_stats() -> str:
     """Get statistics about todos including counts by status and priority.
     
     Use this tool when the user wants to see todo statistics, get an overview, or check how many tasks they have.
     """
     storage = TodoStorage()
-    result = storage.get_stats()
-    return result
+    stats = storage.get_stats()
+    
+    return f"""📊 Todo Statistics:
+  • Total: {stats['total']} tasks
+  • Completed: {stats['completed']}
+  • Incomplete: {stats['incomplete']}
+  • High priority: {stats['high_priority']}
+  • Normal priority: {stats['normal_priority']}
+  • Low priority: {stats['low_priority']}"""
 
 
 # Export all tools as a list for easy binding

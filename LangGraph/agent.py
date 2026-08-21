@@ -21,12 +21,24 @@ User Input → Agent Node (LLM) → Tool Call?
 """
 
 from typing import Annotated, Literal, TypedDict
-from langchain_core.messages import HumanMessage, AIMessage, ToolMessage
+from langchain_core.messages import HumanMessage, AIMessage, ToolMessage, SystemMessage
 from langchain_ollama import ChatOllama
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode
 from tools import TOOLS
+
+# System message to prevent hallucinations
+SYSTEM_MESSAGE = """You are a Todo Assistant. You have tools available - USE THEM directly, do not describe or explain them.
+
+When user asks something, immediately call the appropriate tool:
+- List/show tasks → get_todos()
+- Add task → add_todo()  
+- Complete task → complete_todo()
+- Delete task → delete_todo()
+- Stats → get_todo_stats()
+
+After calling a tool, show the tool's result to the user."""
 
 
 # ============================================================================
@@ -66,8 +78,8 @@ def create_llm():
         LLM instance bound with tools
     """
     llm = ChatOllama(
-        model="llama3.2",  # Use your preferred Ollama model
-        temperature=0.1,   # Low temperature for consistent behavior
+        model="qwen2.5:latest",  # Qwen 2.5 7B (4.7GB) - Better at tool calling
+        temperature=0.0,   # Zero temperature to prevent creativity/hallucinations
         base_url="http://localhost:11434"  # Ollama server
     )
     
@@ -101,8 +113,13 @@ def call_agent(state: AgentState) -> AgentState:
     """
     llm = create_llm()
     
+    # Ensure system message is at the start
+    messages = state["messages"]
+    if not messages or not isinstance(messages[0], SystemMessage):
+        messages = [SystemMessage(content=SYSTEM_MESSAGE)] + messages
+    
     # LLM processes all messages and generates response
-    response = llm.invoke(state["messages"])
+    response = llm.invoke(messages)
     
     # Add LLM response to state (includes tool_calls if any)
     return {"messages": [response]}
@@ -224,9 +241,12 @@ class TodoAgent:
         Returns:
             Agent's final response as string
         """
-        # Create initial state with user message
+        # Create initial state with system message + user message
         initial_state = {
-            "messages": [HumanMessage(content=user_input)]
+            "messages": [
+                SystemMessage(content=SYSTEM_MESSAGE),
+                HumanMessage(content=user_input)
+            ]
         }
         
         # Execute graph (async streaming)
@@ -241,9 +261,15 @@ class TodoAgent:
             messages = last_step.get("messages", [])
             
             if messages:
-                last_message = messages[-1]
-                if isinstance(last_message, AIMessage):
-                    return last_message.content
+                # Look for the last AI message
+                for msg in reversed(messages):
+                    if isinstance(msg, AIMessage) and msg.content:
+                        return msg.content
+                    
+                # If AI message is empty, return the last ToolMessage result
+                for msg in reversed(messages):
+                    if isinstance(msg, ToolMessage) and msg.content:
+                        return msg.content
         
         return "I couldn't process that request."
     

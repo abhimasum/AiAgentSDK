@@ -28,12 +28,15 @@ def print_banner():
     banner = """
     # 🤖 LangGraph Todo Agent
     
-    **Using Ollama Llama 3.2** (Local, Private, Free)
+    **Using Ollama Qwen 2.5 7B (4.7GB)** - Optimized for tool calling
+    
+    ⚠️ **IMPORTANT**: This agent uses REAL tools - it only shows actual tasks from storage.
+    It will NOT make up tasks. If you see empty results, you truly have no tasks.
     
     I can help you manage your todos:
     - Add tasks: "Add task: write report with high priority"
-    - List tasks: "Show my tasks"
-    - Complete tasks: "Mark write report as done"
+    - List tasks: "Show my tasks" or "List all tasks"
+    - Complete tasks: "Mark write report as done" or "Complete task 1"
     - Delete tasks: "Delete todo #3"
     - Get stats: "How many tasks do I have?"
     

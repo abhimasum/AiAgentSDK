@@ -184,9 +184,20 @@ Here's how our todo agent's graph executes:
 1. **Ollama** installed and running:
    ```bash
    # Install from https://ollama.ai
-   ollama pull llama3.2  # Download model
+   
+   # Recommended model: Qwen 2.5 7B (4.7GB) - Best for tool calling
+   ollama pull qwen2.5:latest
+   
    ollama serve          # Start server (localhost:11434)
    ```
+
+   **Alternative Models** (if Qwen doesn't work):
+   - `llama3.1:8b` - Good alternative (~4.7GB)  
+   - `mistral:7b` - May narrate instead of calling (~4.4GB)
+   
+   **NOT Recommended**:
+   - `llama3.2` - Poor tool calling support
+   - `qwen2.5:3b` or models <7B - Too small, unreliable
 
 2. **Python 3.10+**
 
